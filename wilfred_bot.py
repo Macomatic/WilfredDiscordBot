@@ -33,6 +33,8 @@ async def test(ctx,*arg):
                                                                                  
 @bot.command(pass_context=True)
 async def clear(ctx, number):
+    # Deletes number of messages in the chat
+
     await ctx.message.delete()
     number = int(number)
     deleted = await ctx.channel.purge(limit=number)
@@ -51,6 +53,7 @@ async def clear(ctx, number):
                                                                                                    
 @bot.command(pass_context=True)
 async def temperature(ctx, location):
+    # Gives the temperature values, weather status, and humidity in a given area
 
     # Init
     mgr = owm.weather_manager()
@@ -72,6 +75,7 @@ async def temperature(ctx, location):
     
 @bot.command(pass_context=True)
 async def wind(ctx, location):
+    # Gives the wind speed in km/h for a particular location
 
     # Init
     mgr = owm.weather_manager()
@@ -80,7 +84,7 @@ async def wind(ctx, location):
 
     # Wind
     weatherInfoList.append("__Wind__")
-    weatherInfoList.append("**Wind Speed: **" + str(weatherInfo.wind()['speed']) + " m/s")
+    weatherInfoList.append("**Wind Speed: **" + str(round(weatherInfo.wind()['speed']*3.6,2)) + " km/h")
 
     # Output
     for i in range(len(weatherInfoList)): # Sends all information stored in weatherInfoList
@@ -88,6 +92,7 @@ async def wind(ctx, location):
 
 @bot.command(pass_context=True)
 async def rainfall(ctx,location,timeframe):
+    # Gives the previous rainfall in a given timeframe for a particular location. The timeframe is either 1h or 3h ago
 
     # Init
     mgr = owm.weather_manager()
@@ -118,6 +123,7 @@ async def rainfall(ctx,location,timeframe):
 
 @bot.command(pass_context=True)
 async def sun(ctx, location):
+    # Gives the sunrise and sunset times for a given location
 
     # Init
     mgr = owm.weather_manager()
@@ -135,5 +141,23 @@ async def sun(ctx, location):
     # Output
     for i in range(len(weatherInfoList)): # Sends all information stored in weatherInfoList
         await ctx.send(weatherInfoList[i])
+
+@bot.command(pass_context=True)
+async def tennis(ctx, location):
+    # Provides key weather-related information related to playing Tennis and gives a recommendation if playing tennis is viable
+
+    # Init
+    mgr = owm.weather_manager()
+    weatherInfo = mgr.weather_at_place(location).weather # Stores all weather info at that location
+    weatherInfoList = [] # Holds all specific weather information
+
+    #Rainfall check
+    rain3h = 0.0
+    rain_dict = mgr.weather_at_place(location).weather.rain
+    if '3h' in rain_dict:
+        rain3h = int(rain_dict['3h'])
+    
+
+
 
 bot.run("NzY4MTc2MjM5NjkyMjE4NDU5.X48p3w.BmgJCOwqboe8ao7zF1GK3DYSUeo")
