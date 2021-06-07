@@ -1,4 +1,5 @@
 import discord
+import logging
 from datetime import datetime
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot
@@ -21,6 +22,33 @@ async def on_ready():
 async def test(ctx,*arg):
     await ctx.send('{}'.format(" ".join(arg)))
 
+    
+#    _____ _           _      _____                                          _     
+#   / ____| |         | |    / ____|                                        | |    
+#  | |    | |__   __ _| |_  | |     ___  _ __ ___  _ __ ___   __ _ _ __   __| |___ 
+#  | |    | '_ \ / _` | __| | |    / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` / __|
+#  | |____| | | | (_| | |_  | |___| (_) | | | | | | | | | | | (_| | | | | (_| \__ \
+#   \_____|_| |_|\__,_|\__|  \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___/
+                                                                                 
+                                                                                 
+@bot.command(pass_context=True)
+async def clear(ctx, number):
+    await ctx.message.delete()
+    number = int(number)
+    deleted = await ctx.channel.purge(limit=number)
+    confirmDelete = discord.Embed(title='Delete Successfull!', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fff4d)
+    await ctx.channel.send(embed=confirmDelete, delete_after=3.0)
+
+
+
+#  __          __        _   _                  _____                                          _     
+#  \ \        / /       | | | |                / ____|                                        | |    
+#   \ \  /\  / /__  __ _| |_| |__   ___ _ __  | |     ___  _ __ ___  _ __ ___   __ _ _ __   __| |___ 
+#    \ \/  \/ / _ \/ _` | __| '_ \ / _ \ '__| | |    / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` / __|
+#     \  /\  /  __/ (_| | |_| | | |  __/ |    | |___| (_) | | | | | | | | | | | (_| | | | | (_| \__ \
+#      \/  \/ \___|\__,_|\__|_| |_|\___|_|     \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___/
+                                                                                                   
+                                                                                                   
 @bot.command(pass_context=True)
 async def temperature(ctx, location):
 
