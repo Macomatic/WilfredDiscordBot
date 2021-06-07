@@ -51,8 +51,9 @@ guild_ids = [768176653620215869]
 
 @slash.slash(name="clear", description="Delete messages.", guild_ids=guild_ids)
 async def clear(ctx, number:int):
-    await ctx.channel.purge(limit=number)
-    await ctx.send(content=f"{number} messages deleted.")
+    deleted = await ctx.channel.purge(limit=number)
+    confirmDelete = discord.Embed(title='Delete Successfull', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fffd)
+    await ctx.send(embed=confirmDelete, delete_after=3.0)
     
 
 #  __          __        _   _                  _____                                          _     
