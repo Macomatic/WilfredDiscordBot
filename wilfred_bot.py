@@ -3,6 +3,9 @@ import logging
 from datetime import datetime
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot
+from discord_slash import SlashCommand
+from discord_slash.utils.manage_commands import create_choice, create_option, create_permission
+from discord_slash.model import SlashCommandPermissionType
 from pyowm.owm import OWM
 import os
 
@@ -22,6 +25,11 @@ async def on_ready():
 async def test(ctx,*arg):
     await ctx.send('{}'.format(" ".join(arg)))
 
+slash = SlashCommand(bot, sync_commands=True)
+
+# Server ID
+guild_ids = [768176653620215869]
+
     
 #    _____ _           _      _____                                          _     
 #   / ____| |         | |    / ____|                                        | |    
@@ -31,17 +39,21 @@ async def test(ctx,*arg):
 #   \_____|_| |_|\__,_|\__|  \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___/
                                                                                  
                                                                                  
-@bot.command(pass_context=True)
-async def clear(ctx, number):
-    # Deletes number of messages in the chat
+# @bot.command(pass_context=True)
+# async def clear(ctx, number):
+#     # Deletes number of messages in the chat
 
-    await ctx.message.delete()
-    number = int(number)
-    deleted = await ctx.channel.purge(limit=number)
-    confirmDelete = discord.Embed(title='Delete Successfull!', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fff4d)
-    await ctx.channel.send(embed=confirmDelete, delete_after=3.0)
+#     await ctx.message.delete()
+#     number = int(number)
+#     deleted = await ctx.channel.purge(limit=number)
+#     confirmDelete = discord.Embed(title='Delete Successfull!', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fff4d)
+#     await ctx.channel.send(embed=confirmDelete, delete_after=3.0)
 
-
+@slash.slash(name="clear", description="Delete messages.", guild_ids=guild_ids)
+async def clear(ctx, number:int):
+    await ctx.channel.purge(limit=number)
+    await ctx.send(content=f"{number} messages deleted.")
+    
 
 #  __          __        _   _                  _____                                          _     
 #  \ \        / /       | | | |                / ____|                                        | |    
