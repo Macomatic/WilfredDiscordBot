@@ -1,4 +1,5 @@
 import discord
+from datetime import datetime
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot
 from pyowm.owm import OWM
@@ -51,8 +52,15 @@ async def weather(ctx, location):
         else:
             weatherInfoList.append("Rain in the last 3 hours: 0.0 mm")
 
-    #weatherInfoList.append("Humidity: " + str(weatherInfo.get_humidity())+ " %") # Add current humidity in %
-    #weatherInfoList.append(str(weatherInfo.get_detailed_status()))
+    # Sunrise/Sunset
+    sunrise = weatherInfo.sunrise_time() - 14400 # -14400 for GMT to EST offset; work on a general solution
+    sunset = weatherInfo.sunset_time() - 14400
+
+    weatherInfoList.append("Time of Sunrise: " + datetime.utcfromtimestamp(sunrise).strftime('%Y-%m-%d %H:%M:%S') + " EST")
+    weatherInfoList.append("Time of Sunset: " + datetime.utcfromtimestamp(sunset).strftime('%Y-%m-%d %H:%M:%S') + " EST")
+
+    weatherInfoList.append("Humidity: " + str(weatherInfo.humidity)+ "%") # Add current humidity in %
+    weatherInfoList.append("Current Weather Status: " + str(weatherInfo.detailed_status).title())
     
     for i in range(len(weatherInfoList)): # Sends all information stored in weatherInfoList
         await ctx.send(weatherInfoList[i])
