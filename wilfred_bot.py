@@ -1,5 +1,7 @@
 import discord
+from profanity_filter import ProfanityFilter
 
+#pf = ProfanityFilter()
 client = discord.Client()
 
 @client.event
@@ -11,5 +13,7 @@ async def on_message(message):
     if message.author != client.user:
         if message.content.startswith("!Hi"):
             await message.channel.send("Hello user!")
+        if message.content:
+            await message.channel.send(pf.censor(message.content))
 
 client.run("NzY4MTc2MjM5NjkyMjE4NDU5.X48p3w.BmgJCOwqboe8ao7zF1GK3DYSUeo")
