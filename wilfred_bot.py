@@ -25,7 +25,32 @@ async def weather(ctx, location):
     mgr = owm.weather_manager()
     weatherInfo = mgr.weather_at_place(location).weather # Stores all weather info at that location
     weatherInfoList = [] # Holds all specific weather information
-    weatherInfoList.append("Temperature: " + str(weatherInfo.temperature()['temp'] -273.15) + " °C") # Add current temperature in °C
+    lastHour = False # Need to implement rain command to take in param to indicate 1h or 3h
+
+    # Temperature
+    weatherInfoList.append("Average Temperature: " + str(round(weatherInfo.temperature()['temp'] -273.15,1)) + " °C") # Add current temperature in °C
+    weatherInfoList.append("Minimum Temperature: " + str(round(weatherInfo.temperature()['temp_min'] -273.15,1)) + " °C")
+    weatherInfoList.append("Maximum Temperature: " + str(round(weatherInfo.temperature()['temp_max'] -273.15,1)) + " °C")
+    
+    # Wind
+    weatherInfoList.append("Wind Speed: " + str(weatherInfo.wind()['speed']) + " m/s")
+
+    # Rainfall
+    rain_dict = mgr.weather_at_place(location).weather.rain
+    if lastHour:
+        if '1h' in rain_dict:
+            weatherInfoList.append("Rain in the last hour: " + str(rain_dict['1h']) + " mm")
+        
+        else:
+            weatherInfoList.append("Rain in the last hour: 0.0 mm")
+
+    if not lastHour:
+        if '3h' in rain_dict:
+            weatherInfoList.append("Rain in the last 3 hours: " + str(rain_dict['3h']) + " mm")
+        
+        else:
+            weatherInfoList.append("Rain in the last 3 hours: 0.0 mm")
+
     #weatherInfoList.append("Humidity: " + str(weatherInfo.get_humidity())+ " %") # Add current humidity in %
     #weatherInfoList.append(str(weatherInfo.get_detailed_status()))
     
