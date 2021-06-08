@@ -20,6 +20,7 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print("Online")
+    await bot.change_presence(activity = discord.Game('Sea of Thieves'))
 
 @bot.command()
 async def test(ctx,*arg):
@@ -39,21 +40,22 @@ guild_ids = [768176653620215869]
 #   \_____|_| |_|\__,_|\__|  \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___/
                                                                                  
                                                                                  
-# @bot.command(pass_context=True)
-# async def clear(ctx, number):
-#     # Deletes number of messages in the chat
+@bot.command(pass_context=True)
+async def clear(ctx, number):
+    # Deletes number of messages in the chat
 
-#     await ctx.message.delete()
-#     number = int(number)
-#     deleted = await ctx.channel.purge(limit=number)
-#     confirmDelete = discord.Embed(title='Delete Successfull!', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fff4d)
-#     await ctx.channel.send(embed=confirmDelete, delete_after=3.0)
-
-@slash.slash(name="clear", description="Delete messages.", guild_ids=guild_ids)
-async def clear(ctx, number:int):
+    await ctx.message.delete()
+    number = int(number)
     deleted = await ctx.channel.purge(limit=number)
-    confirmDelete = discord.Embed(title='Delete Successfull', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fffd)
-    await ctx.send(embed=confirmDelete, delete_after=3.0)
+    confirmDelete = discord.Embed(title='Delete Successfull!', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fff4d)
+    await ctx.channel.send(embed=confirmDelete, delete_after=3.0)
+
+# @slash.slash(name="clear", description="Delete messages.", guild_ids=guild_ids)
+# async def clear(ctx, number:int):
+#     deleted = await ctx.channel.purge(limit=number)
+#     confirmDelete = discord.Embed(title='Delete Successfull', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fffd)
+#     await ctx.send(embed=confirmDelete, delete_after=3.0)
+
     
 
 #  __          __        _   _                  _____                                          _     
@@ -64,7 +66,7 @@ async def clear(ctx, number:int):
 #      \/  \/ \___|\__,_|\__|_| |_|\___|_|     \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___/
                                                                                                    
                                                                                                    
-@bot.command(pass_context=True)
+@bot.command(pass_context=True, name = 'temperature', help = 'Fetches temperature information')
 async def temperature(ctx, location):
     # Gives the temperature values, weather status, and humidity in a given area
 
