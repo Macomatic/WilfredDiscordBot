@@ -59,7 +59,24 @@ async def clear(ctx, number):
 #     confirmDelete = discord.Embed(title='Delete Successfull', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fffd)
 #     await ctx.send(embed=confirmDelete, delete_after=3.0)
 
-    
+@bot.command(pass_context=True)
+async def join(ctx):
+    # Joins a voice channel
+
+    if (ctx.author.voice):
+        channel = ctx.message.author.voice.channel
+        await channel.connect()
+    else:
+        await ctx.send("You need to be in a voice channel.")
+
+@bot.command(pass_context=True)
+async def leave(ctx):
+    # Leaves a voice channel
+
+    if (ctx.voice_client):
+        await ctx.guild.voice_client.disconnect()
+    else:
+        await ctx.send("I'm not in a voice channel.")
 
 #  __          __        _   _                  _____                                          _     
 #  \ \        / /       | | | |                / ____|                                        | |    
