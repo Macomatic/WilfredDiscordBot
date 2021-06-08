@@ -8,6 +8,9 @@ from discord_slash.utils.manage_commands import create_choice, create_option, cr
 from discord_slash.model import SlashCommandPermissionType
 from pyowm.owm import OWM
 import os
+from pyowm.utils.formatting import timeformat
+
+from pyowm.weatherapi25 import one_call, weather
 
 bot = commands.Bot(command_prefix='!')
 owm = OWM('17d978ab62088ebbeab69878b3172d7c')
@@ -20,7 +23,7 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print("Online")
-    await bot.change_presence(activity = discord.Game('Sea of Thieves'))
+    await bot.change_presence(activity = discord.Game('with Tea and Biscuits'))
 
 @bot.command()
 async def test(ctx,*arg):
@@ -171,8 +174,70 @@ async def tennis(ctx, location):
     rain_dict = mgr.weather_at_place(location).weather.rain
     if '3h' in rain_dict:
         rain3h = int(rain_dict['3h'])
+
+@bot.command(pass_context=True)
+async def dForecast(ctx):
+    # Provides a comprehesive table displaying the hourly forcast 
+    """
+    Example Display
+    +------------------------------------------------------------------------------------------------------+
+    |                                                  DAY                                                 |
+    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
+    |  HOUR |  8 AM | 9 AM | 10 AM | 11 AM | 12 AM | 1 PM | 2 PM | 3 PM | 4 PM | 5 PM | 6 PM | 7 PM | 8 PM |
+    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
+    |  STAT |   ""  |      |       |       |       |      |      |      |      |      |      |      |      |
+    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
+    |  TEMP |   32  |      |       |       |       |      |      |      |      |      |      |      |      |
+    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
+    | FEELS |   35  |      |       |       |       |      |      |      |      |      |      |      |      |
+    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
+    | P.O.P |  32%  |      |       |       |       |      |      |      |      |      |      |      |      |
+    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
+    | HUMID |  120% |      |       |       |       |      |      |      |      |      |      |      |      |
+    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
+    |  WIND | 9km/h |      |       |       |       |      |      |      |      |      |      |      |      |
+    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+   
+    """
     
+    # Init
+    mgr = owm.weather_manager()
+    oneCall = mgr.one_call(lat=43.845009, lon=-79.561396) # Location
+    oneCallList = []
+    timeTranslate = {"00":"12 AM", "01":"1 AM", "02":"2 AM", "03":"3 AM", "04":"4 AM", "05":"5 AM", "06":"6 AM", "07":"7 AM", "08":"8 AM", "09":"9 AM", "10":"10 AM", "11":"11 AM", "12":"12 PM", "13":"1 PM", "14":"2 PM", "15":"3 PM", "16":"4 PM", "17":"5 PM", "18":"6 PM", "19":"7 PM", "20":"8 PM", "21":"9 PM", "22":"10 PM", "23":"11 PM"} # Dictionary to convert military time to 12 hour time 
+    weatherIcons = {"few clouds":":white_sun_small_cloud:", "scattered clouds":":partly_sunny:", "broken clouds":":white_sun_cloud:", "overcast clouds":":cloud:", "clear sky":":sunny:"} # Dictionary to convert weather status into discord emojis
+    weatherData = [] 
 
+    weatherData.append(str(oneCall.current.reference_time(timeformat='date'))[0:10]) # Current date
+    for time in range(-4,9): # For loop which calls 12 hours of forcast time (EST)
+        # Calls time(Hour), weather status, temperature, feels like temperature, probability of precipitation, humidity, wind speed
+        data = [] 
+        data.append(timeTranslate[str(oneCall.forecast_hourly[time].reference_time(timeformat='date'))[11:13]]) 
+        status = oneCall.forecast_hourly[time].detailed_status 
+        data.append(status)
+        if 'thunder' in status:
+            data.append(":thunder_cloud_rain:")
+        elif 'fog' in status or 'mist' in status:
+            data.append(":fog:")
+        elif 'snow' in status or 'freezing' in status:
+            data.append(":cloud_snow:")
+        elif 'rain' in status or 'drizzle' in status:
+            data.append(":cloud_rain:") 
+        else:
+            data.append(weatherIcons[status]) # for unknown status
 
+        data.append(oneCall.forecast_hourly[time].temperature('celsius')['temp'])
+        data.append(oneCall.forecast_hourly[time].temperature('celsius')['feels_like'])
+        data.append(oneCall.forecast_hourly[time].precipitation_probability)
+        data.append(oneCall.forecast_hourly[time].humidity)
+        data.append(round(oneCall.forecast_hourly[time].wind().get('speed',0)*3.6,2)) #convert m/s to km/h
+        weatherData.append(data)
+    # Input
+    #oneCallList.append("+-------------------------------------------------------------------------------------------------------+")
+    #oneCallList.append("|                                                  {:s}                                                                                             |".format(str(oneCall.current.reference_time(timeformat='date'))[:10]))
+    #oneCallList.append("+-------------------------------------------------------------------------------------------------------+")
+    
+    # Output
+    for i in range(len(weatherData)): # Sends all information stored in weatherData
+        await ctx.send(weatherData[i])
 
 bot.run("NzY4MTc2MjM5NjkyMjE4NDU5.X48p3w.BmgJCOwqboe8ao7zF1GK3DYSUeo")
