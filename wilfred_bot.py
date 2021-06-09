@@ -9,6 +9,7 @@ from discord_slash.model import SlashCommandPermissionType
 from pyowm.owm import OWM
 import os
 from pyowm.utils.formatting import timeformat
+from discord.ext.commands.cooldowns import BucketType
 
 from pyowm.weatherapi25 import one_call, weather
 
@@ -78,8 +79,10 @@ async def leave(ctx):
     else:
         await ctx.send("I'm not in a voice channel.")
 
+# Command With Permissions
 @bot.command(pass_context=True)
-@commands.is_owner() # Only bot owners can use the command
+@commands.has_role("Nerds")
+@commands.cooldown(1, 10, BucketType.user) # Command Cooldown: 1 use every 10 seconds per user
 async def permTest(ctx):
     await ctx.send("This works")
 
@@ -88,6 +91,7 @@ async def permTest(ctx):
 async def permTest_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.send("You do not have permissions to use this command.")
+
 #  __          __        _   _                  _____                                          _     
 #  \ \        / /       | | | |                / ____|                                        | |    
 #   \ \  /\  / /__  __ _| |_| |__   ___ _ __  | |     ___  _ __ ___  _ __ ___   __ _ _ __   __| |___ 
