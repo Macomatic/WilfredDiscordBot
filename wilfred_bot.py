@@ -78,6 +78,16 @@ async def leave(ctx):
     else:
         await ctx.send("I'm not in a voice channel.")
 
+@bot.command(pass_context=True)
+@commands.is_owner() # Only bot owners can use the command
+async def permTest(ctx):
+    await ctx.send("This works")
+
+# Error handling
+@permTest.error
+async def permTest_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("You do not have permissions to use this command.")
 #  __          __        _   _                  _____                                          _     
 #  \ \        / /       | | | |                / ____|                                        | |    
 #   \ \  /\  / /__  __ _| |_| |__   ___ _ __  | |     ___  _ __ ___  _ __ ___   __ _ _ __   __| |___ 
