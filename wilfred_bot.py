@@ -50,13 +50,13 @@ async def clear(ctx, number):
     await ctx.message.delete()
     number = int(number)
     deleted = await ctx.channel.purge(limit=number)
-    confirmDelete = discord.Embed(title='Delete Successfull!', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fff4d)
+    confirmDelete = discord.Embed(title='Delete Successful!', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fff4d)
     await ctx.channel.send(embed=confirmDelete, delete_after=3.0)
 
 # @slash.slash(name="clear", description="Delete messages.", guild_ids=guild_ids)
 # async def clear(ctx, number:int):
 #     deleted = await ctx.channel.purge(limit=number)
-#     confirmDelete = discord.Embed(title='Delete Successfull', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fffd)
+#     confirmDelete = discord.Embed(title='Delete Successful', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fffd)
 #     await ctx.send(embed=confirmDelete, delete_after=3.0)
 
 @bot.command(pass_context=True)
