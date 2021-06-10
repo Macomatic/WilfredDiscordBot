@@ -81,14 +81,20 @@ async def leave(ctx):
 
 # Command With Permissions
 @bot.command(pass_context=True)
-@commands.has_role("Nerds")
+@commands.has_role("Guinea pigs")
 @commands.cooldown(1, 10, BucketType.user) # Command Cooldown: 1 use every 10 seconds per user
 async def permTest(ctx):
     await ctx.send("This works")
 
 # Error handling
-@permTest.error
-async def permTest_error(ctx, error):
+
+# @permTest.error # Checks for errors for permTest command
+# async def permTest_error(ctx, error):
+#     if isinstance(error, commands.CheckFailure):
+#         await ctx.send("You do not have permissions to use this command.")
+
+@bot.event # Checks for errors for all commands
+async def on_command_error(ctx, error):
     if isinstance(error, commands.CheckFailure):
         await ctx.send("You do not have permissions to use this command.")
 
