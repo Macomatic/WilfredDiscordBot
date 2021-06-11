@@ -79,14 +79,15 @@ async def leave(ctx):
     else:
         await ctx.send("I'm not in a voice channel.")
 
+def perms(ctx):
+    return ctx.author.id == 213051396692508673, 498881376917913604
+
 # Command With Permissions
 @bot.command(pass_context=True)
-@commands.has_role("Guinea pigs")
+@commands.check(perms) # Checks function for who can use the command
 @commands.cooldown(1, 10, BucketType.user) # Command Cooldown: 1 use every 10 seconds per user
 async def permTest(ctx):
     await ctx.send("This works")
-
-# Error handling
 
 # @permTest.error # Checks for errors for permTest command
 # async def permTest_error(ctx, error):
