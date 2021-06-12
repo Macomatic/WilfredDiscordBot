@@ -79,6 +79,11 @@ async def leave(ctx):
     else:
         await ctx.send("I'm not in a voice channel.")
 
+@bot.command(pass_context=True)
+async def kick(ctx, member: discord.Member, *, reason=None):
+    await member.kick(reason=reason)
+    await ctx.send(f"{member} has been kicked.")
+
 def perms(ctx):
     return ctx.author.id == 213051396692508673, 498881376917913604
 
