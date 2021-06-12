@@ -228,7 +228,7 @@ async def forecast(ctx, location):
 
     # API CALLS
     weatherData.append(str(oneCall.current.reference_time(timeformat='date'))[0:10]) # Current date
-    for time in range(9): # For loop which calls 12 hours of forcast time (EST)
+    for time in range(1,10): # For loop which calls 9 hours of forcast time (EST)
         # Calls time(Hour), weather status, temperature, feels like temperature, probability of precipitation, humidity, wind speed
         data = [] 
         data.append(timeTranslate[str(oneCall.forecast_hourly[time].reference_time(timeformat='date'))[11:13]]) # Hour of the day
