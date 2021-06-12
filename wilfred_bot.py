@@ -8,6 +8,7 @@ from discord_slash.utils.manage_commands import create_choice, create_option, cr
 from discord_slash.model import SlashCommandPermissionType
 from pyowm.owm import OWM
 import os
+import youtube_dl
 from pyowm.utils.formatting import timeformat
 from discord.ext.commands.cooldowns import BucketType
 
@@ -24,7 +25,7 @@ async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     print("Online")
-    await bot.change_presence(activity = discord.Game('with Tea and Biscuits'))
+    await bot.change_presence(activity = discord.Game('with Alfred'))
 
 @bot.command()
 async def test(ctx,*arg):
@@ -59,25 +60,6 @@ async def clear(ctx, number):
 #     deleted = await ctx.channel.purge(limit=number)
 #     confirmDelete = discord.Embed(title='Delete Successful', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fffd)
 #     await ctx.send(embed=confirmDelete, delete_after=3.0)
-
-@bot.command(pass_context=True)
-async def join(ctx):
-    # Joins a voice channel
-
-    if (ctx.author.voice):
-        channel = ctx.message.author.voice.channel
-        await channel.connect()
-    else:
-        await ctx.send("You need to be in a voice channel.")
-
-@bot.command(pass_context=True)
-async def leave(ctx):
-    # Leaves a voice channel
-
-    if (ctx.voice_client):
-        await ctx.guild.voice_client.disconnect()
-    else:
-        await ctx.send("I'm not in a voice channel.")
 
 @bot.command(pass_context=True)
 async def kick(ctx, member: discord.Member, *, reason=None):
@@ -283,5 +265,78 @@ async def forecast(ctx, location):
     #for i in range(len(oneCallList)): # Sends all information stored in weatherData
     await ctx.send(oneCallList)
     await ctx.send(oneCallList2)
+
+
+#   __  __           _         _____                                          _     
+#  |  \/  |         (_)       / ____|                                        | |    
+#  | \  / |_   _ ___ _  ___  | |     ___  _ __ ___  _ __ ___   __ _ _ __   __| |___ 
+#  | |\/| | | | / __| |/ __| | |    / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` / __|
+#  | |  | | |_| \__ \ | (__  | |___| (_) | | | | | | | | | | | (_| | | | | (_| \__ \
+#  |_|  |_|\__,_|___/_|\___|  \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___/
+                                                                                  
+                                                   
+@bot.command(pass_context=True)
+async def play(ctx, url:str):
+    song = os.path.isfile("song.mp3")
+    try:
+        if song:
+            os.remove("song.mp3")
+    except PermissionError:
+        await ctx.send("Music is currently playing! Use the 'stop' command before trying to play another song")
+        return
+
+    vc = ctx.author.voice.channel
+    await vc.connect()
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    
+
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192'
+        }]
+    }
+
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+
+    for file in os.listdir("./"):
+        if file.endswith(".mp3"):
+            os.rename(file, "song.mp3")
+    voice.play(discord.FFmpegPCMAudio("song.mp3"))
+
+
+@bot.command(pass_context=True)
+async def leave(ctx):
+    if (ctx.voice_client):
+        await ctx.guild.voice_client.disconnect()
+    else:
+        await ctx.send("_Wilfred_ is not in a voice channel!")
+
+@bot.command(pass_context=True)
+async def pause(ctx):
+    voice = voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice.is_playing():
+        voice.pause()
+    else:
+        await ctx.send("There audio is already paused!")
+
+@bot.command(pass_context=True)
+async def resume(ctx):
+    voice = voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice.is_paused():
+        voice.resume()
+    else:
+        await ctx.send("The audio is already playing!")
+
+
+
+
+
+
+
+
 
 bot.run("NzY4MTc2MjM5NjkyMjE4NDU5.X48p3w.BmgJCOwqboe8ao7zF1GK3DYSUeo")
