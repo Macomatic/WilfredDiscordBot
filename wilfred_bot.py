@@ -193,68 +193,69 @@ async def tennis(ctx, location):
         rain3h = int(rain_dict['3h'])
 
 @bot.command(pass_context=True)
-async def dForecast(ctx):
+async def forecast(ctx, location):
     # Provides a comprehesive table displaying the hourly forcast 
-    """
-    Example Display
-    +------------------------------------------------------------------------------------------------------+
-    |                                                  DAY                                                 |
-    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
-    |  HOUR |  8 AM | 9 AM | 10 AM | 11 AM | 12 AM | 1 PM | 2 PM | 3 PM | 4 PM | 5 PM | 6 PM | 7 PM | 8 PM |
-    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
-    |  STAT |   ""  |      |       |       |       |      |      |      |      |      |      |      |      |
-    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
-    |  TEMP |   32  |      |       |       |       |      |      |      |      |      |      |      |      |
-    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
-    | FEELS |   35  |      |       |       |       |      |      |      |      |      |      |      |      |
-    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
-    | P.O.P |  32%  |      |       |       |       |      |      |      |      |      |      |      |      |
-    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
-    | HUMID |  120% |      |       |       |       |      |      |      |      |      |      |      |      |
-    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+
-    |  WIND | 9km/h |      |       |       |       |      |      |      |      |      |      |      |      |
-    +-------+-------+------+-------+-------+-------+------+------+------+------+------+------+------+------+   
-    """
     
     # Init
     mgr = owm.weather_manager()
-    oneCall = mgr.one_call(lat=43.845009, lon=-79.561396) # Location
-    oneCallList = []
-    timeTranslate = {"00":"12 AM", "01":"1 AM", "02":"2 AM", "03":"3 AM", "04":"4 AM", "05":"5 AM", "06":"6 AM", "07":"7 AM", "08":"8 AM", "09":"9 AM", "10":"10 AM", "11":"11 AM", "12":"12 PM", "13":"1 PM", "14":"2 PM", "15":"3 PM", "16":"4 PM", "17":"5 PM", "18":"6 PM", "19":"7 PM", "20":"8 PM", "21":"9 PM", "22":"10 PM", "23":"11 PM"} # Dictionary to convert military time to 12 hour time 
-    weatherIcons = {"few clouds":":white_sun_small_cloud:", "scattered clouds":":partly_sunny:", "broken clouds":":white_sun_cloud:", "overcast clouds":":cloud:", "clear sky":":sunny:"} # Dictionary to convert weather status into discord emojis
+    oneCall = mgr.one_call(lat=mgr.weather_at_place(location).location.lat, lon=mgr.weather_at_place(location).location.lon) # Location
+    oneCallList = "" 
+    oneCallList2 = ""   
+    timeTranslate = {"00":"8 PM", "01":"9 PM", "02":"10 PM", "03":"11 PM", "04":"12 AM", "05":"1 AM", "06":"2 AM", "07":"3 AM", "08":"4 AM", "09":"5 AM", "10":"6 AM", "11":"7 AM", "12":"8 AM", "13":"9 AM", "14":"10 AM", "15":"11 AM", "16":"12 PM", "17":"1 PM", "18":"2 PM", "19":"3 PM", "20":"4 PM", "21":"5 PM", "22":"6 PM", "23":"7 PM"} # Dictionary to convert military time to 12 hour time, GMT to EST
+    weatherIcons = {"few clouds":"🌤️", "scattered clouds":"⛅", "broken clouds":"🌥️", "overcast clouds":"☁️", "clear sky":"☀️"} # Dictionary to convert weather status into discord emojis
     weatherData = [] 
 
+    # API CALLS
     weatherData.append(str(oneCall.current.reference_time(timeformat='date'))[0:10]) # Current date
-    for time in range(-4,9): # For loop which calls 12 hours of forcast time (EST)
+    for time in range(9): # For loop which calls 12 hours of forcast time (EST)
         # Calls time(Hour), weather status, temperature, feels like temperature, probability of precipitation, humidity, wind speed
         data = [] 
-        data.append(timeTranslate[str(oneCall.forecast_hourly[time].reference_time(timeformat='date'))[11:13]]) 
+        data.append(timeTranslate[str(oneCall.forecast_hourly[time].reference_time(timeformat='date'))[11:13]]) # Hour of the day
         status = oneCall.forecast_hourly[time].detailed_status 
-        data.append(status)
-        if 'thunder' in status:
-            data.append(":thunder_cloud_rain:")
-        elif 'fog' in status or 'mist' in status:
-            data.append(":fog:")
+        if 'thunder' in status: # statments to generalize weather status into icons
+            data.append("⛈️")
+        elif 'fog' in status or 'mist' in status: 
+            data.append("🌫️")
         elif 'snow' in status or 'freezing' in status:
-            data.append(":cloud_snow:")
+            data.append("🌨️")
         elif 'rain' in status or 'drizzle' in status:
-            data.append(":cloud_rain:") 
+            data.append("🌧️") 
         else:
             data.append(weatherIcons[status]) # for unknown status
-
-        data.append(oneCall.forecast_hourly[time].temperature('celsius')['temp'])
-        data.append(oneCall.forecast_hourly[time].temperature('celsius')['feels_like'])
-        data.append(oneCall.forecast_hourly[time].precipitation_probability)
-        data.append(oneCall.forecast_hourly[time].humidity)
-        data.append(round(oneCall.forecast_hourly[time].wind().get('speed',0)*3.6,2)) #convert m/s to km/h
+        data.append(status.split()) # split detailed multiword status
+        data.append(str(round(float(oneCall.forecast_hourly[time].temperature('celsius')['temp']),1)) + "°C") # temperature
+        data.append(str(round(float(oneCall.forecast_hourly[time].temperature('celsius')['feels_like']),1)) + "°C") # feels like temperature
+        data.append(str(oneCall.forecast_hourly[time].precipitation_probability) + " %") # probability of precipitation
+        data.append(str(oneCall.forecast_hourly[time].humidity) + " %") #
+        data.append(str(round(oneCall.forecast_hourly[time].wind().get('speed',0)*3.6,1)) + " KM/H") #convert m/s to km/h
         weatherData.append(data)
+
     # Input
-    #oneCallList.append("+-------------------------------------------------------------------------------------------------------+")
-    #oneCallList.append("|                                                  {:s}                                                                                             |".format(str(oneCall.current.reference_time(timeformat='date'))[:10]))
-    #oneCallList.append("+-------------------------------------------------------------------------------------------------------+")
+    oneCallList += "```   +-----------------------------------------------------------------------------------------------------------------------------+"
+    oneCallList += "\n   |{:^125s}|".format(weatherData[0])
+    oneCallList += "\n   |{:^125s}|".format(location)
+    oneCallList += "\n   +--------+------------+------------+------------+------------+------------+------------+------------+------------+------------+"
+    oneCallList += "\n   |  HOUR  |{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|".format(weatherData[1][0], weatherData[2][0], weatherData[3][0], weatherData[4][0], weatherData[5][0], weatherData[6][0], weatherData[7][0], weatherData[8][0], weatherData[9][0])
+    oneCallList += "\n   +--------+------------+------------+------------+------------+------------+------------+------------+------------+------------+"
+    oneCallList += "\n   |        |{:^12s}|{:^11s}|{:^12s}|{:^11s}|{:^12s}|{:^11s}|{:^12s}|{:^11s}|{:^12s}|".format(weatherData[1][1], weatherData[2][1], weatherData[3][1], weatherData[4][1], weatherData[5][1], weatherData[6][1], weatherData[7][1], weatherData[8][1], weatherData[9][1])
+    oneCallList += "\n   | STATUS |{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|".format(weatherData[1][2][0], weatherData[2][2][0], weatherData[3][2][0], weatherData[4][2][0], weatherData[5][2][0], weatherData[6][2][0], weatherData[7][2][0], weatherData[8][2][0], weatherData[9][2][0])
+    oneCallList += "\n   |        |{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|".format(weatherData[1][2][-1], weatherData[2][2][-1], weatherData[3][2][-1], weatherData[4][2][-1], weatherData[5][2][-1], weatherData[6][2][-1], weatherData[7][2][-1], weatherData[8][2][-1], weatherData[9][2][-1])
+    oneCallList += "\n   +--------+------------+------------+------------+------------+------------+------------+------------+------------+------------+"
+    oneCallList += "\n   |  TEMP  |{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|".format(weatherData[1][3], weatherData[2][3], weatherData[3][3], weatherData[4][3], weatherData[5][3], weatherData[6][3], weatherData[7][3], weatherData[8][3], weatherData[9][3])
+    oneCallList += "\n   +--------+------------+------------+------------+------------+------------+------------+------------+------------+------------+```"
+    oneCallList2 += "```   +--------+------------+------------+------------+------------+------------+------------+------------+------------+------------+"
+    oneCallList2 += "\n   |  FEELS |{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|".format(weatherData[1][4], weatherData[2][4], weatherData[3][4], weatherData[4][4], weatherData[5][4], weatherData[6][4], weatherData[7][4], weatherData[8][4], weatherData[9][4])
+    oneCallList2 += "\n   +--------+------------+------------+------------+------------+------------+------------+------------+------------+------------+"
+    oneCallList2 += "\n   |  P.O.P |{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|".format(weatherData[1][5], weatherData[2][5], weatherData[3][5], weatherData[4][5], weatherData[5][5], weatherData[6][5], weatherData[7][5], weatherData[8][5], weatherData[9][5])
+    oneCallList2 += "\n   +--------+------------+------------+------------+------------+------------+------------+------------+------------+------------+"
+    oneCallList2 += "\n   |  HUMID |{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|".format(weatherData[1][6], weatherData[2][6], weatherData[3][6], weatherData[4][6], weatherData[5][6], weatherData[6][6], weatherData[7][6], weatherData[8][6], weatherData[9][6])
+    oneCallList2 += "\n   +--------+------------+------------+------------+------------+------------+------------+------------+------------+------------+"
+    oneCallList2 += "\n   |  WIND  |{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|{:^12s}|".format(weatherData[1][7], weatherData[2][7], weatherData[3][7], weatherData[4][7], weatherData[5][7], weatherData[6][7], weatherData[7][7], weatherData[8][7], weatherData[9][7])
+    oneCallList2 += "\n   +--------+------------+------------+------------+------------+------------+------------+------------+------------+------------+```"
     
     # Output
-    for i in range(len(weatherData)): # Sends all information stored in weatherData
-        await ctx.send(weatherData[i])
+    #for i in range(len(oneCallList)): # Sends all information stored in weatherData
+    await ctx.send(oneCallList)
+    await ctx.send(oneCallList2)
 
 bot.run("NzY4MTc2MjM5NjkyMjE4NDU5.X48p3w.BmgJCOwqboe8ao7zF1GK3DYSUeo")
