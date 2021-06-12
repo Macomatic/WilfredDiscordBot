@@ -9,6 +9,7 @@ from discord_slash.model import SlashCommandPermissionType
 from pyowm.owm import OWM
 import os
 from pyowm.utils.formatting import timeformat
+from discord.ext.commands.cooldowns import BucketType
 
 from pyowm.weatherapi25 import one_call, weather
 
@@ -50,13 +51,13 @@ async def clear(ctx, number):
     await ctx.message.delete()
     number = int(number)
     deleted = await ctx.channel.purge(limit=number)
-    confirmDelete = discord.Embed(title='Delete Successfull!', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fff4d)
+    confirmDelete = discord.Embed(title='Delete Successful!', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fff4d)
     await ctx.channel.send(embed=confirmDelete, delete_after=3.0)
 
 # @slash.slash(name="clear", description="Delete messages.", guild_ids=guild_ids)
 # async def clear(ctx, number:int):
 #     deleted = await ctx.channel.purge(limit=number)
-#     confirmDelete = discord.Embed(title='Delete Successfull', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fffd)
+#     confirmDelete = discord.Embed(title='Delete Successful', description=f'Deleted {len(deleted)} messages in #{ctx.channel}', color=0x4fffd)
 #     await ctx.send(embed=confirmDelete, delete_after=3.0)
 
 @bot.command(pass_context=True)
@@ -77,6 +78,26 @@ async def leave(ctx):
         await ctx.guild.voice_client.disconnect()
     else:
         await ctx.send("I'm not in a voice channel.")
+
+def perms(ctx):
+    return ctx.author.id == 213051396692508673, 498881376917913604
+
+# Command With Permissions
+@bot.command(pass_context=True)
+@commands.check(perms) # Checks function for who can use the command
+@commands.cooldown(1, 10, BucketType.user) # Command Cooldown: 1 use every 10 seconds per user
+async def permTest(ctx):
+    await ctx.send("This works")
+
+# @permTest.error # Checks for errors for permTest command
+# async def permTest_error(ctx, error):
+#     if isinstance(error, commands.CheckFailure):
+#         await ctx.send("You do not have permissions to use this command.")
+
+@bot.event # Checks for errors for all commands
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CheckFailure):
+        await ctx.send("You do not have permissions to use this command.")
 
 #  __          __        _   _                  _____                                          _     
 #  \ \        / /       | | | |                / ____|                                        | |    
