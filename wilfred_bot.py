@@ -13,6 +13,7 @@ import youtube_dl
 from pyowm.utils.formatting import timeformat
 from discord.ext.commands.cooldowns import BucketType
 from pyowm.weatherapi25 import one_call, weather
+import urllib.parse, urllib.request, re
 
 # Global Variables
 bot = commands.Bot(command_prefix='!')
@@ -278,36 +279,57 @@ async def forecast(ctx, location):
                                                                                   
                                                    
 @bot.command(pass_context=True)
-async def play(ctx, url:str):
+async def play(ctx, *, search):
+    # Plays a song on Wilfred given either a youtube url or a query phrase
+
+    # Finds song query/link youtube directory through search results
+    query = urllib.parse.urlencode({
+        'search_query': search
+    })
+    await ctx.send(query)
+    content = urllib.request.urlopen(
+        'http://www.youtube.com/results?' + query
+    )
+
+    search_results = re.findall(r"watch\?v=(\S{11})", content.read().decode()) 
+    url = 'http://www.youtube.com/watch?v=' + search_results[0] # only want first search result
+
+    # Replaces old song file with new song file
     song = os.path.isfile("song.webm")
     try:
         if song:
             os.remove("song.webm")
+
+    # Queues song if another is already playing
     except PermissionError:
         await ctx.send("The following song has been queued: "+url)
         song_queue.append(url)
         return
 
+    # Bot joins user's vc
     vc = ctx.author.voice.channel
     await vc.connect()
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     
 
-    ydl_opts = {
+    ydl_opts = { # ydl file format specifications
         'format': '249/250/251',
     }
 
+    # Downloads the webm version of the song
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
+    # Plays the song
     for file in os.listdir("./"):
         if file.endswith(".webm"):
             os.rename(file, "song.webm")
     voice.play(discord.FFmpegOpusAudio("song.webm"))
 
-
 @bot.command(pass_context=True)
 async def leave(ctx):
+    # Bot leaves the discord call when command is used
+
     if (ctx.voice_client):
         await ctx.guild.voice_client.disconnect()
         os.remove("song.webm") # doesnt work, need to fix
@@ -316,6 +338,8 @@ async def leave(ctx):
 
 @bot.command(pass_context=True)
 async def pause(ctx):
+    # Pauses song when it is playing
+
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice.is_playing():
         voice.pause()
@@ -324,6 +348,8 @@ async def pause(ctx):
 
 @bot.command(pass_context=True)
 async def resume(ctx):
+    # Resumes paused song
+
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice.is_paused():
         voice.resume()
@@ -332,6 +358,8 @@ async def resume(ctx):
 
 @bot.command(pass_context=True)
 async def skip(ctx):
+    # Skips song to next song in queue
+    
     if len(song_queue) != 0:
         voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
         voice.stop()
@@ -354,15 +382,5 @@ async def skip(ctx):
         song_queue.pop(0)
     else:
         await ctx.send("There are no other songs in the queue!")
-
-
-
-
-
-
-
-
-
-
 
 bot.run("NzY4MTc2MjM5NjkyMjE4NDU5.X48p3w.BmgJCOwqboe8ao7zF1GK3DYSUeo")
