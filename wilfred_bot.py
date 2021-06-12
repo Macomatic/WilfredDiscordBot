@@ -1,3 +1,4 @@
+# Imports
 import discord
 import logging
 from datetime import datetime
@@ -11,11 +12,12 @@ import os
 import youtube_dl
 from pyowm.utils.formatting import timeformat
 from discord.ext.commands.cooldowns import BucketType
-
 from pyowm.weatherapi25 import one_call, weather
 
+# Global Variables
 bot = commands.Bot(command_prefix='!')
 owm = OWM('17d978ab62088ebbeab69878b3172d7c')
+song_queue = [] # Essential to hold song queues
 
 print("Initializing Wilfred Bot...")
 
@@ -282,7 +284,8 @@ async def play(ctx, url:str):
         if song:
             os.remove("song.webm")
     except PermissionError:
-        await ctx.send("Music is currently playing! Use the 'stop' command before trying to play another song")
+        await ctx.send("The following song has been queued: "+url)
+        song_queue.append(url)
         return
 
     vc = ctx.author.voice.channel
@@ -313,7 +316,7 @@ async def leave(ctx):
 
 @bot.command(pass_context=True)
 async def pause(ctx):
-    voice = voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice.is_playing():
         voice.pause()
     else:
@@ -321,11 +324,38 @@ async def pause(ctx):
 
 @bot.command(pass_context=True)
 async def resume(ctx):
-    voice = voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice.is_paused():
         voice.resume()
     else:
         await ctx.send("The audio is already playing!")
+
+@bot.command(pass_context=True)
+async def skip(ctx):
+    if len(song_queue) != 0:
+        voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+        voice.stop()
+        url = song_queue[0]
+        await ctx.send("Now playing: "+url)
+        os.remove("song.webm")
+        
+        
+        ydl_opts = {
+            'format': '249/250/251',
+        }
+
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+
+        for file in os.listdir("./"):
+            if file.endswith(".webm"):
+                os.rename(file, "song.webm")
+        voice.play(discord.FFmpegOpusAudio("song.webm"))
+        song_queue.pop(0)
+    else:
+        await ctx.send("There are no other songs in the queue!")
+
+
 
 
 
