@@ -277,10 +277,10 @@ async def forecast(ctx, location):
                                                    
 @bot.command(pass_context=True)
 async def play(ctx, url:str):
-    song = os.path.isfile("song.mp3")
+    song = os.path.isfile("song.webm")
     try:
         if song:
-            os.remove("song.mp3")
+            os.remove("song.webm")
     except PermissionError:
         await ctx.send("Music is currently playing! Use the 'stop' command before trying to play another song")
         return
@@ -291,27 +291,23 @@ async def play(ctx, url:str):
     
 
     ydl_opts = {
-        'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192'
-        }]
+        'format': '249/250/251',
     }
 
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
     for file in os.listdir("./"):
-        if file.endswith(".mp3"):
-            os.rename(file, "song.mp3")
-    voice.play(discord.FFmpegPCMAudio("song.mp3"))
+        if file.endswith(".webm"):
+            os.rename(file, "song.webm")
+    voice.play(discord.FFmpegOpusAudio("song.webm"))
 
 
 @bot.command(pass_context=True)
 async def leave(ctx):
     if (ctx.voice_client):
         await ctx.guild.voice_client.disconnect()
+        os.remove("song.webm") # doesnt work, need to fix
     else:
         await ctx.send("_Wilfred_ is not in a voice channel!")
 
