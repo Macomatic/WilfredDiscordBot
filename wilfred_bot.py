@@ -17,7 +17,7 @@ import urllib.parse, urllib.request, re
 
 # Global Variables
 bot = commands.Bot(command_prefix='!')
-owm = OWM('17d978ab62088ebbeab69878b3172d7c')
+owm = OWM('INSERT TOKEN HERE')
 song_queue = [] # Essential to hold song queues
 
 print("Initializing Wilfred Bot...")
